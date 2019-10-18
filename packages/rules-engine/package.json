@@ -1,0 +1,32 @@
+{
+  "name": "@totalsoft/rules-engine",
+  "version": "2.2.0",
+  "description": "Business rules api via functional composition",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "rimraf output",
+    "build": "spago build",
+    "prepare": "yarn run build",
+    "test": "spago test && jest --watchAll",
+    "spago": "spago"
+  },
+  "author": "TotalSoft",
+  "homepage": "https://github.com/osstotalsoft/jsbb/tree/master/packages/rules-engine",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/osstotalsoft/jsbb.git",
+    "directory": "packages/rules-engine"
+  },
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "purescript": "^0.13.3",
+    "rimraf": "^3.0.0",
+    "spago": "^0.10.0",
+    "purty": "4.5.1"
+  }
+}
