@@ -1,15 +1,17 @@
 import { variadicApply, checkRules } from "../_utils";
-import { chain } from "ramda";
+import { composeWith, chain,composeK } from "ramda";
 import { contramap } from "@totalsoft/zion";
-import { setInnerProp } from "../objectUtils";
+import { setInnerProp, getInnerProp } from "../objectUtils";
 
 function _concat(rule1, rule2) {
-    return rule1 |> chain(newModel => rule2 |> contramap((model, ctx) => [newModel, _getContext(model, newModel, ctx)]))
+    //return composeK(rule2, rule1)
+    return (composeWith(chain))([model => rule2(model) |> contramap( ctx => _getContext(model, ctx)), rule1])        
 }
 
-function _getContext(model, newModel, ctx) {
+function _getContext(model, ctx) {
     const { fieldPath, document } = ctx;
-    return model === newModel ? ctx : { ...ctx, document: setInnerProp(document, fieldPath, newModel) }
+    const oldModel = getInnerProp(document, fieldPath);
+    return model === oldModel ? ctx : { ...ctx, document: setInnerProp(document, fieldPath, model) }
 }
 
 const chainRules = variadicApply(function chainRules(...rules) {

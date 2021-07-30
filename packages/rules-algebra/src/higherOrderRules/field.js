@@ -6,18 +6,17 @@ import { findMatchingItem } from "@totalsoft/change-tracking";
 
 export const field = curry(function field(key, rule) {
     checkRules(rule);
-    return (
-        rule
-        |> _logFieldPath
-        |> _filterCurrentProp
-        |> contramap((model, ctx) => [model[key], _getFieldContext(model, ctx, key)])
-        |> mergeParent(key)
-    );
+    return function (model) {
+        return rule(model[key])
+            |> _logFieldPath
+            |> _filterCurrentProp(model) 
+            |> contramap(ctx => _getFieldContext(model, ctx, key))
+            |> mergeParent(model, key)
+    }      
 });
 
-const mergeParent = curry(function mergeParent(field, fieldRule) {
+const mergeParent = curry(function mergeParent(model, field, fieldRule) {
     return $do(function* () {
-        const [model] = yield Reader.ask();
         const fieldValue = yield fieldRule;
 
         if (model[field] === fieldValue) {
@@ -30,27 +29,27 @@ const mergeParent = curry(function mergeParent(field, fieldRule) {
     });
 });
 
-function _logFieldPath(rule) {
+function _logFieldPath(reader) {
     return $do(function* () {
-        const [, fieldContext] = yield Reader.ask();
-        const result = yield rule;
+        const fieldContext = yield Reader.ask();
+        const result = yield reader;
         if (result !== Object(result))
             _log(fieldContext, `Rule result is ${result} for path ${[...fieldContext.scopePath, ...fieldContext.fieldPath].join(".")}`);
         return result;
     });
 }
 
-function _filterCurrentProp(rule) {
+const _filterCurrentProp = curry( function(model, reader) {
     return $do(function* () {
-        const [model, { prevModel }] = yield Reader.ask();
+        const { prevModel } = yield Reader.ask();
 
         if (_isPrimitiveValue(model) && model !== prevModel) {
             return model;
         }
 
-        return yield rule;
+        return yield reader;
     });
-}
+});
 
 function _isPrimitiveValue(model) {
     return (typeof (model) !== "object" && !Array.isArray(model)) || model === null || model === undefined

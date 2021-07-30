@@ -8,15 +8,16 @@ describe("higher order rules:", () => {
     // Arrange
     const rule1 = Rule(x => x * 2);
     const rule2 = Rule(x => x + 1);
+    const rule3 = Rule(x => x * 3);
 
-    const rule = [rule1, rule2] |> chainRules;
+    const rule = [rule1, rule2, rule3] |> chainRules;
     const model = 1;
 
     // Act
     const result = applyRule(rule, model, model);
 
     // Assert
-    expect(result).toBe(3);
+    expect(result).toBe(9);
   });
 
   it("field applies rule on field: ", () => {
@@ -50,20 +51,20 @@ describe("higher order rules:", () => {
   it("shape applies rule on fields: ", () => {
     // Arrange
     const rule = shape({
-      name: Rule.of("name"),
-      surname: Rule.of("surname")
+      name: Rule(f => f + "name"),
+      surname: Rule(f => f +"surname")
     });
 
     const model = {
-      name: null,
-      surname: null
+      name: "a ",
+      surname: "a "
     };
 
     // Act
     const result = applyRule(rule, model, model);
 
     // Assert
-    expect(result).toStrictEqual({ name: "name", surname: "surname" });
+    expect(result).toStrictEqual({ name: "a name", surname: "a surname" });
   });
 
   it("shape preserves null object: ", () => {
@@ -255,7 +256,10 @@ describe("higher order rules:", () => {
 
   it("until applies rule until condition is true: ", () => {
     // Arrange
-    const rule = Rule(x => x * x) |> until(x => x >= 100);
+    const rule = Rule(x =>  x * x) |> until(x => { 
+      return x >= 100 
+    }
+      );
 
     const model = 2;
 

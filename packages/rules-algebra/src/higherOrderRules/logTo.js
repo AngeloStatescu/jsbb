@@ -4,7 +4,9 @@ import { curry } from "ramda";
 
 const logTo = curry(function logTo(logger, rule) {
   checkRules(rule);
-  return rule |> contramap((model, context) => [model, { ...context, log: true, logger }]);
+  return function(model) {
+    return rule(model) |> contramap(context => ({ ...context, log: true, logger }));
+  }
 });
 
 export default logTo;

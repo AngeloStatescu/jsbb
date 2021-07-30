@@ -1,20 +1,20 @@
-import Reader from "@totalsoft/zion/data/reader";
 import { map, addIndex } from "ramda";
 import { $do } from "@totalsoft/zion";
 import { field, chainRules } from "./";
 import { checkRules } from "../_utils";
+import { Rule } from "../rule";
 
 const mapIndexed = addIndex(map);
 
 export default function items(itemRule) {
   checkRules(itemRule);
-  return $do(function* () {
-    const [items] = yield Reader.ask();
+  return function(items) {
     if (items === null || items === undefined || items.length === 0) {
-      return items;
+      return Rule.of(items)(items);
     }
-    return yield items
-      |> mapIndexed((_, index) => field(index, itemRule))
-      |> chainRules;
-  });
+
+    return $do(function*() {
+      return yield (items |> mapIndexed((_, index) => field(index, itemRule)) |> chainRules)(items);
+    });
+  };
 }
